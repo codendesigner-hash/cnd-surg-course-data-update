@@ -16,7 +16,7 @@ jobs:
 
       - name: Fetch and convert CSV to JSON
         run: |
-          curl -L "https://docs.google.com/spreadsheets/d/1WkjgKguwineBLXxxjd2AjiBgwl9EMfTQEg5Hvm2mLK0/gviz/tq?tqx=out:csv&sheet=Course Ratings" -o data.csv
+          curl -L "https://docs.google.com/spreadsheets/d/1WkjgKguwineBLXxxjd2AjiBgwl9EMfTQEg5Hvm2mLK0/gviz/tq?tqx=out:csv&sheet=Course%20Ratings" -o data.csv
           python3 -c "
           import csv, json
           with open('data.csv', newline='', encoding='utf-8') as f:
