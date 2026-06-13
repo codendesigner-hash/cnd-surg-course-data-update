@@ -1,0 +1,35 @@
+name: Sync Course Data
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch and convert CSV to JSON
+        run: |
+          curl -L "https://docs.google.com/spreadsheets/d/1WkjgKguwineBLXxxjd2AjiBgwl9EMfTQEg5Hvm2mLK0/gviz/tq?tqx=out:csv&sheet=Course Ratings" -o data.csv
+          python3 -c "
+          import csv, json
+          with open('data.csv', newline='', encoding='utf-8') as f:
+              reader = csv.DictReader(f)
+              rows = [row for row in reader]
+          with open('ratings.json', 'w', encoding='utf-8') as f:
+              json.dump(rows, f, ensure_ascii=False)
+          "
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add ratings.json
+          git diff --staged --quiet || git commit -m "Update course data"
+          git push
