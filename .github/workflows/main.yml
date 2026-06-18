@@ -21,13 +21,14 @@ jobs:
           import csv, json, os
           with open('data.csv', newline='', encoding='utf-8') as f:
               new_rows = list(csv.DictReader(f))
+          KEY = 'Course Link'
           existing = []
           if os.path.exists('ratings.json'):
               with open('ratings.json', encoding='utf-8') as f:
                   existing = json.load(f)
-          merged = {r['Course link']: r for r in existing if r.get('Course link')}
+          merged = {r[KEY]: r for r in existing if r.get(KEY)}
           for row in new_rows:
-              key = row.get('Course link', '').strip()
+              key = row.get(KEY, '').strip()
               if key:
                   if key in merged:
                       for k, v in row.items():
@@ -35,8 +36,12 @@ jobs:
                               merged[key][k] = v
                   else:
                       merged[key] = row
+          out = list(merged.values())
+          for r in out:
+              if 'Course Link' in r and 'Course link' not in r:
+                  r['Course link'] = r['Course Link']
           with open('ratings.json', 'w', encoding='utf-8') as f:
-              json.dump(list(merged.values()), f, ensure_ascii=False)
+              json.dump(out, f, ensure_ascii=False)
           "
 
       - name: Commit and push
