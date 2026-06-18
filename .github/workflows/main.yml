@@ -1,44 +1,26 @@
 name: Sync Course Data
-
 on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
-
 permissions:
   contents: write
-
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Fetch and convert CSV to JSON
         run: |
-          curl -L "https://docs.google.com/spreadsheets/d/1Ia7hF9vLGfdlMp-yItvCZMMYCMlPWRSJ_Lr_5dDIZD8/gviz/tq?tqx=out:csv&sheet=Course%20Ratings" -o data.csv
+          curl -L "https://docs.google.com/spreadsheets/d/1WkjgKguwineBLXxxjd2AjiBgwl9EMfTQEg5Hvm2mLK0/gviz/tq?tqx=out:csv&sheet=Course%20Ratings" -o data.csv
           python3 -c "
-          import csv, json, os
+          import csv, json
           with open('data.csv', newline='', encoding='utf-8') as f:
-              new_rows = list(csv.DictReader(f))
-          existing = []
-          if os.path.exists('ratings.json'):
-              with open('ratings.json', encoding='utf-8') as f:
-                  existing = json.load(f)
-          merged = {r['Course link']: r for r in existing if r.get('Course link')}
-          for row in new_rows:
-              key = row.get('Course link', '').strip()
-              if key:
-                  if key in merged:
-                      for k, v in row.items():
-                          if str(v).strip():
-                              merged[key][k] = v
-                  else:
-                      merged[key] = row
+              reader = csv.DictReader(f)
+              rows = [row for row in reader]
           with open('ratings.json', 'w', encoding='utf-8') as f:
-              json.dump(list(merged.values()), f, ensure_ascii=False)
+              json.dump(rows, f, ensure_ascii=False)
           "
-
       - name: Commit and push
         run: |
           git config user.name "github-actions"
